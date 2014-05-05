@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include <stdio.h>
+#define TIMER_START(name) int64 t_##name = getTickCount()
+#define TIMER_END(name) printf("TIMER_" #name ":\t%6.2fms\n", \
+            1000.f * ((getTickCount() - t_##name) / getTickFrequency()))
+
+
 using namespace cv;
 using namespace std;
 
@@ -23,25 +29,16 @@ int main(int argc, char **argv)
         cout << helper << endl;
         return 1;
     }
-    int errorCode = 0;
-    try
-    {
-        boostColor(img, dstImg, intensity);
-    }
-    catch (cv::Exception &e)
-    {
-        errorCode = e.code;
-    }
-
-    if (errorCode == 0)
-    {
-        namedWindow(srcImgWinName);
-        namedWindow(dstImgWinName);
-        imshow(srcImgWinName, img);
-        imshow(dstImgWinName, dstImg);
-        waitKey();
-        destroyAllWindows();
-    }
+	cv::setNumThreads(4);
+	TIMER_START(ALL);
+    boostColor(img, dstImg, intensity);
+	TIMER_END(ALL);
+    namedWindow(srcImgWinName);
+    namedWindow(dstImgWinName);
+    imshow(srcImgWinName, img);
+    imshow(dstImgWinName, dstImg);
+    waitKey();
+    destroyAllWindows();
 
     return 0;
 }
@@ -53,6 +50,6 @@ int processArguments(int argc, char **argv, Mat &img, float &intensity)
         return 1;
     }
     img = imread(argv[1], CV_LOAD_IMAGE_COLOR);
-    intensity = atof(argv[2]);
+    intensity = (float)atof(argv[2]);
     return 0;
 }
